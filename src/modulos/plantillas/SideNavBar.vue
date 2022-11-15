@@ -11,7 +11,7 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn icon>
+      <v-btn icon @click="dialogSesion = true">
         <v-icon>mdi-export</v-icon>
       </v-btn>
     </v-toolbar>
@@ -29,7 +29,7 @@
         <v-list-item link>
           <v-list-item-content>
             <v-list-item-title class="text-h6 white--text">
-              LEMA FERNANDO RAUL
+              {{ NombreUsuario }}
             </v-list-item-title>
             <v-list-item-subtitle class="white--text"
               >PROFESIONAL</v-list-item-subtitle
@@ -97,50 +97,117 @@
           </v-list-item>
         </v-list-group>
       </v-list>
+
+      <v-dialog
+        transition="dialog-top-transition"
+        max-width="600"
+        v-model="this.dialogSesion"
+      >
+        <v-card>
+          <v-toolbar :color="colorDialog" dark>KGESTION</v-toolbar>
+
+          <div class="text-h6 pa-12">
+            Desea Cerrar la Sesion?
+            <v-btn color="primary" @click="cerrarSesion">SI</v-btn>
+            <v-btn color="primary" @click="dialogSesion = false">NO</v-btn>
+          </div>
+
+          <v-card-actions class="justify-end">
+            <v-btn text @click="dialogSesion = false">Cerrar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-navigation-drawer>
   </div>
 </template>
 
 <script>
 //import { defineComponent } from '@vue/composition-api'
+import axios from "axios";
 
 export default {
   data: () => {
     return {
+      NombreUsuario: sessionStorage.getItem("NombreUsuario"),
+      colorDialog: "red",
+      dialogSesion: false,
       drawer: null,
       prefijoIcon: "mdi",
-      items: [
-        {
-          action: "mdi-account-group",
-          text: "Mis Pacientes",
-          items: [{ text: "Atenciones", icon: "exclamation-thick" }],
-        },
-        {
-          action: "mdi-cash",
-          active: true,
-          text: "Mi Facturacion",
-          items: [{ text: "Estado de Cuenta", icon: "clipboard-list-outline" }],
-        },
-        {
-          action: "mdi-send",
-          text: "Comunicacion",
-          items: [
-            { text: "Documentacion", icon: "file-document-outline" },
-            { text: "Aranceles", icon: "currency-usd" },
-          ],
-        },
-        {
-          action: "mdi-text-box-search-outline",
-          text: "Investigacion",
-          items: [
-            { text: "Revista Digital", icon: "newspaper-variant-multiple" },
-          ],
-        },
-      ],
+      // items: [
+      //   {
+      //     action: "mdi-account-group",
+      //     text: "Mis Pacientes",
+      //     items: [{ text: "Atenciones", icon: "exclamation-thick" }],
+      //   },
+      //   {
+      //     action: "mdi-cash",
+      //     active: true,
+      //     text: "Mi Facturacion",
+      //     items: [{ text: "Estado de Cuenta", icon: "clipboard-list-outline" }],
+      //   },
+      //   {
+      //     action: "mdi-send",
+      //     text: "Comunicacion",
+      //     items: [
+      //       { text: "Documentacion", icon: "file-document-outline" },
+      //       { text: "Aranceles", icon: "currency-usd" },
+      //     ],
+      //   },
+      //   {
+      //     action: "mdi-text-box-search-outline",
+      //     text: "Investigacion",
+      //     items: [
+      //       { text: "Revista Digital", icon: "newspaper-variant-multiple" },
+      //     ],
+      //   },
+      // ],
+      items: [],
     };
   },
 
+  mounted() {
+    this.cargarPermisos();
+  },
+
   methods: {
+    cargarPermisos() {
+      console.log("En a cargar Permisos");
+      console.log(sessionStorage.getItem("NombreRol"));
+      if (sessionStorage.getItem("NombreRol") == "admin") {
+        //console.log("Entro en si del if");
+        this.items = [
+          {
+            action: "mdi-account-group",
+            text: "Board",
+            // items: [{ text: "Atenciones", icon: "exclamation-thick" }],
+          },
+          {
+            action: "mdi-cash",
+            active: true,
+            text: "Matriculados",
+            // items: [
+            //   { text: "Estado de Cuenta", icon: "clipboard-list-outline" },
+            // ],
+          },
+          {
+            action: "mdi-send",
+            text: "Obras Sociales",
+            // items: [
+            //   { text: "Documentacion", icon: "file-document-outline" },
+            //   { text: "Aranceles", icon: "currency-usd" },
+            // ],
+          },
+          // {
+          //   action: "mdi-text-box-search-outline",
+          //   text: "Investigacion",
+          //   items: [
+          //     { text: "Revista Digital", icon: "newspaper-variant-multiple" },
+          //   ],
+          // },
+        ];
+      }
+    },
+
     mostrarMenu() {
       console.log("El valor del drawer es ");
       console.log(this.drawer);
@@ -149,6 +216,48 @@ export default {
 
     obtenerNombreDireccion(item) {
       console.log(item);
+    },
+
+    // async cerrarSesion() {
+    //   var respuesta = "";
+
+    //   this.url =
+    //     this.urlBase + "logout?_token=" + sessionStorage.getItem("Token");
+
+    //   // const config = {
+    //   //   headers: {
+    //   //     Authorization: `Bearer ${sessionStorage.getItem("Token")}`,
+    //   //   },
+    //   // };
+    //   const config = {
+    //     headers: {
+    //       Accept: `application/json`,
+    //     },
+    //   };
+    //   respuesta = await this.$http
+    //     .post(this.url, config)
+    //     .then((response) => response.data);
+
+    //   console.log("He cerrado la sesion" + respuesta);
+
+    //   sessionStorage.clear();
+    //   sessionStorage.setItem("SesionAbierta", 2);
+    //   this.$router.push({ path: "/" });
+    //   location.reload();
+    // },
+
+    async cerrarSesion() {
+      var form = {
+        _token: sessionStorage.getItem("Token"),
+      };
+
+      axios.post(this.urlBase + "logout", form).then((res) => {
+        console.log(res.data);
+      });
+    },
+
+    async confirmarCerrarSesion() {
+      this.dialogSesion = true;
     },
   },
 };

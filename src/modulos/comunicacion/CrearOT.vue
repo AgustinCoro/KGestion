@@ -3,7 +3,7 @@
     <v-row class="text-center">
       <v-col class="mb-4">
         <h1 class="display-2 font-weight-bold mb-3" style="color: dimgray">
-          Aranceles
+          Nueva Orden de Trabajo
         </h1>
       </v-col>
     </v-row>
@@ -28,19 +28,15 @@
 
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            v-bind="attrs"
-            v-on="on"
-            color="red"
+          <router-link
             :to="{
               name: 'mnu_ProcOT',
             }"
-            small
-            fab
-            dark
           >
-            <v-icon>mdi-cancel</v-icon>
-          </v-btn>
+            <v-btn v-bind="attrs" v-on="on" color="red" small fab dark>
+              <v-icon>mdi-cancel</v-icon>
+            </v-btn>
+          </router-link>
         </template>
         <span>Cancelar Modificacion</span>
       </v-tooltip>

@@ -59,6 +59,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import sha256 from "js-sha256";
 
 export default {
@@ -70,8 +71,6 @@ export default {
     password: null,
     nombreUsuario: null,
     passwordEncriptado: null,
-    //urlBase: "https://localhost:5001/api/",
-    //urlBase: "http://transporte.edese.local/API/api/",
     colorSnackBar: null,
     mensajeSnackBar: null,
     idUsuario: null,
@@ -104,39 +103,68 @@ export default {
       // }
 
       this.passwordEncriptado = sha256(this.password);
-      //console.log(this.passwordEncriptado);
 
       this.verificarUsuario();
     },
 
+    // async verificarUsuario() {
+    //   var respuesta = "";
+
+    //   this.url =
+    //     this.urlBase +
+    //     "login?email=" +
+    //     this.nombreUsuario +
+    //     "&password=" +
+    //     this.password;
+
+    //   console.log(this.url);
+    //   respuesta = await this.$http
+    //     .post(this.url)
+    //     .then((response) => response.data);
+    //   console.log("respuesta:");
+    //   console.log(respuesta);
+
+    //   if (respuesta.message == "Login correcto") {
+    //     sessionStorage.setItem("NombreUsuario", respuesta.user.name);
+    //     sessionStorage.setItem("Email", respuesta.user.email);
+    //     sessionStorage.setItem("Token", respuesta._token);
+    //     sessionStorage.setItem("NombreRol", respuesta.user.roles[0].name);
+    //     sessionStorage.setItem("SesionAbierta", 0);
+
+    //     this.$router.push({ path: "/" });
+    //     location.reload();
+    //   } else {
+    //     this.value = true;
+    //     this.colorSnackBar = "red";
+    //     this.mensajeSnackBar = "Usuario o Contraseña Incorrecta";
+    //   }
+    // },
+
     async verificarUsuario() {
-      var respuesta = "";
-
-      var obj = {
+      var form = {
         email: this.nombreUsuario,
-        password: this.passwordEncriptado,
+        password: this.password,
       };
+      axios.get(this.urlBase + "sanctum/csrf-cookie").then(() => {
+        axios.post(this.urlBase + "login", form).then((res) => {
+          console.log(res.data);
+          console.log(res.data.message);
+          if (res.data.message == "Login correcto") {
+            sessionStorage.setItem("NombreUsuario", res.data.user.name);
+            sessionStorage.setItem("Email", res.data.user.email);
+            sessionStorage.setItem("Token", res.data._token);
+            sessionStorage.setItem("NombreRol", res.data.user.roles[0].name);
+            sessionStorage.setItem("SesionAbierta", 0);
 
-      this.url = this.urlBase + "Usuarios/login";
-
-      respuesta = await this.$http
-        .post(this.url, obj)
-        .then((response) => response.data);
-      // console.log("respuesta:");
-      // console.log(respuesta.id);
-
-      if (respuesta.id != null) {
-        //console.log("El codigo de usuario es: " + respuesta.id);
-        sessionStorage.setItem("CodigoUsuario", respuesta.id);
-        sessionStorage.setItem("Token", respuesta.token);
-        sessionStorage.setItem("FechaExpiracion", respuesta.expiration);
-        sessionStorage.setItem("SesionAbierta", 0);
-        this.obtenerPermisos();
-      } else {
-        this.value = true;
-        this.colorSnackBar = "red";
-        this.mensajeSnackBar = "Usuario o Contraseña Incorrecta";
-      }
+            this.$router.push({ path: "/" });
+            location.reload();
+          } else {
+            this.value = true;
+            this.colorSnackBar = "red";
+            this.mensajeSnackBar = "Usuario o Contraseña Incorrecta";
+          }
+        });
+      });
     },
 
     async obtenerPermisos() {

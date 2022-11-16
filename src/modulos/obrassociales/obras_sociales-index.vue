@@ -87,34 +87,39 @@
               <template v-slot:[`item.actions`]="{ item }">
                 <v-tooltip bottom mg="1">
                   <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      v-bind="attrs"
-                      v-on="on"
-                      color="green"
-                      small
-                      fab
-                      dark
-                      @click="editItem(item)"
-                    >
-                      <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
+                    <v-hover v-slot="{ hover }">
+                      <v-btn
+                        v-bind="attrs"
+                        v-on="on"
+                        small
+                        fab
+                        dark
+                        @click="eliminarRepuesto(item)"
+                        class="ml-2"
+                        :color="hover ? 'green' : 'grey'"
+                      >
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </v-hover>
                   </template>
                   <span>Editar Obra Social</span>
                 </v-tooltip>
                 <v-tooltip bottom mg="1">
                   <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      v-bind="attrs"
-                      v-on="on"
-                      color="red"
-                      small
-                      fab
-                      dark
-                      @click="eliminarRepuesto(item)"
-                      class="ml-2"
-                    >
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
+                    <v-hover v-slot="{ hover }">
+                      <v-btn
+                        v-bind="attrs"
+                        v-on="on"
+                        small
+                        fab
+                        dark
+                        @click="eliminarRepuesto(item)"
+                        class="ml-2"
+                        :color="hover ? 'red' : 'grey'"
+                      >
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+                    </v-hover>
                   </template>
                   <span>Eliminar Obra Social</span>
                 </v-tooltip>
@@ -184,6 +189,8 @@
 export default {
   data() {
     return {
+      colorBtnEditar: false,
+      colorBtnEliminar: false,
       search: "",
       headers: [
         {
@@ -283,6 +290,57 @@ export default {
       ],
     };
   },
+  mounted() {
+    console.log(sessionStorage.getItem("Token"));
+    var form = {
+      _token: sessionStorage.getItem("Token"),
+    };
+
+    this.$http.get(this.urlBase + "api/obras-sociales", form).then((res) => {
+      console.log(res.data);
+    });
+
+    this.$http.get(this.urlBase + "sanctum/csrf-cookie").then(() => {
+      this.$http.get(this.urlBase + "api/obras-sociales", form).then((res) => {
+        console.log(res);
+        // console.log(res.data.message);
+        // if (res.data.message == "Login correcto") {
+        //   sessionStorage.setItem("NombreUsuario", res.data.user.name);
+        //   sessionStorage.setItem("Email", res.data.user.email);
+        //   sessionStorage.setItem("Token", res.data._token);
+        //   sessionStorage.setItem("NombreRol", res.data.user.roles[0].name);
+        //   sessionStorage.setItem("SesionAbierta", 0);
+
+        //   this.$router.push({ path: "/" });
+        //   location.reload();
+        // } else {
+        //   this.value = true;
+        //   this.colorSnackBar = "red";
+        //   this.mensajeSnackBar = "Usuario o Contraseña Incorrecta";
+        // }
+      });
+    });
+  },
+  watch: {
+    hover(value) {
+      console.log(this.hover);
+      console.log(value);
+    },
+    // colorBtnEliminar(value) {
+    //   console.log(this.colorBtnEliminar);
+    //   console.log(value);
+    // },
+  },
+  methods: {
+    cambiarColor() {
+      console.log("cambio el color");
+    },
+  },
+  //   computed(){
+  //     cambiarColor(){
+  //         if ()
+  //     }
+  //   },
 };
 </script>
 <style></style>

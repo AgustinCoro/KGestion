@@ -8,43 +8,6 @@
       </v-col>
     </v-row>
 
-    <!-- <v-row style="margin-left: 80%" justify="space-around">
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            v-bind="attrs"
-            v-on="on"
-            color="green"
-            small
-            fab
-            dark
-            @click="ingresarDetalleRepuestoOT"
-          >
-            <v-icon>mdi-content-save</v-icon>
-          </v-btn>
-        </template>
-        <span>Crear Orden de Trabajo</span>
-      </v-tooltip>
-
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            v-bind="attrs"
-            v-on="on"
-            color="red"
-            :to="{
-              name: 'mnu_ProcOT',
-            }"
-            small
-            fab
-            dark
-          >
-            <v-icon>mdi-cancel</v-icon>
-          </v-btn>
-        </template>
-        <span>Cancelar Modificacion</span>
-      </v-tooltip>
-    </v-row> -->
     <v-row dense>
       <!-- <v-row dense style="margin-top: 5%; margin-bottom: 5%"> -->
       <v-col cols="12" style="margin-top: 2%">
@@ -56,7 +19,7 @@
               <v-text-field
                 v-model="search"
                 append-icon="mdi-magnify"
-                label="Buscar"
+                label="Buscar (Identificador / Obra Social)"
                 single-line
                 hide-details
               ></v-text-field>
@@ -70,7 +33,7 @@
                     small
                     fab
                     dark
-                    @click="ingresarDetalleRepuestoOT"
+                    @click="ingresarObraSocial"
                   >
                     <v-icon>mdi-plus-circle-outline</v-icon>
                   </v-btn>
@@ -80,7 +43,7 @@
             </v-card-title>
             <v-data-table
               :headers="headers"
-              :items="desserts"
+              :items="tablaObrasSociales"
               :search="search"
               :footer-props="traduccionTabla"
             >
@@ -94,7 +57,7 @@
                         small
                         fab
                         dark
-                        @click="eliminarRepuesto(item)"
+                        @click="modificarObraSocial(item)"
                         class="ml-2"
                         :color="hover ? 'green' : 'grey'"
                       >
@@ -123,203 +86,161 @@
                   </template>
                   <span>Eliminar Obra Social</span>
                 </v-tooltip>
+                <v-tooltip bottom mg="1">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-hover v-slot="{ hover }">
+                      <v-btn
+                        v-bind="attrs"
+                        v-on="on"
+                        small
+                        fab
+                        dark
+                        @click="eliminarRepuesto(item)"
+                        class="ml-2"
+                        :color="hover ? 'purple' : 'grey'"
+                        :to="{ name: 'aranceles', params: { datos: item } }"
+                      >
+                        <v-icon>mdi-eye-outline</v-icon>
+                      </v-btn>
+                    </v-hover>
+                  </template>
+                  <span>Ver Aranceles</span>
+                </v-tooltip>
               </template>
             </v-data-table>
           </v-card>
         </template>
-        <!-- </v-card> -->
       </v-col>
-
-      <!-- <v-col cols="12" style="margin-top: 2%">
-        <v-card color="#952175" dark>
-          <v-card-title class="text-h5"> Servis Periodico </v-card-title>
-          <v-data-table
-            :headers="cabecerasServis"
-            :items="tablaServis"
-            sort-by="Repuesto"
-            class="elevation-1"
+      <v-dialog
+        transition="dialog-top-transition"
+        max-width="600"
+        v-model="this.mostrarDialog"
+      >
+        <v-card>
+          <v-toolbar :color="colorDialog" dark
+            >KGESTION - Formulario de Ingreso de Obra Social</v-toolbar
           >
-            <template v-slot:[`item.sep_fec_prox_servis`]="{ item }">
-              <span>
-                <template v-if="item.sep_fec_prox_servis">
-                  {{ moment(item.sep_fec_prox_servis).format("DD/MM/YYYY") }}
-                </template>
-              </span>
-            </template>
-          </v-data-table>
+
+          <template v-if="fillBsqObraSocial.identificador != null">
+            <div class="text-h6 pa-12">
+              Desea finalizar la Reparacion?
+              <v-btn
+                color="primary"
+                @click="finalizarReparacion(fillBsqObraSocial.identificador)"
+                >SI</v-btn
+              >
+              <v-btn color="primary" @click="dialog = false">NO</v-btn>
+            </div>
+          </template>
+
+          <template v-else>
+            <v-card-text>
+              <div class="text-h6 pa-12">
+                {{ this.mensajeDelDialog }}
+              </div>
+            </v-card-text>
+          </template>
+
+          <v-card-actions class="justify-end">
+            <v-btn text @click="dialog = false">Cerrar</v-btn>
+          </v-card-actions>
         </v-card>
-      </v-col> -->
-
-      <!-- <v-col cols="12" style="margin-top: 2%">
-        <v-card color="#26735B" dark>
-          <v-card-title class="text-h6"> Datos Complementarios </v-card-title>
-          <v-row>
-            <v-col style="margin-left: 5%" cols="11">
-              <v-text-field
-                v-model="fillDatosComplementarios.kmActual"
-                label="KMS de la Unidad"
-                outlined
-              ></v-text-field>
-            </v-col>
-
-            <v-col style="margin-left: 5%" cols="11">
-              <v-text-field
-                v-model="fillDatosComplementarios.indisponibilidad"
-                label="Indisponibilidad"
-                outlined
-                readonly
-              ></v-text-field>
-            </v-col>
-
-            <v-col style="margin-left: 5%" cols="11">
-              <v-text-field
-                v-model="fillDatosComplementarios.generador"
-                label="Generado Por"
-                outlined
-                readonly
-              ></v-text-field>
-            </v-col>
-          </v-row>
-        </v-card>
-      </v-col>-->
+      </v-dialog>
     </v-row>
+
+    <modalingresareditarobrasocial
+      ref="modalingresareditarobrasocial"
+      @recargarObraSocial="recargarObraSocial"
+    >
+    </modalingresareditarobrasocial>
   </v-container>
 </template>
 <script>
+import modalingresareditarobrasocial from "./componentes/ModalIngresarEditarObraSocial.vue";
+
 export default {
+  components: {
+    modalingresareditarobrasocial,
+  },
   data() {
     return {
+      fillBsqObraSocial: {
+        identificador: null,
+      },
+      colorDialog: "blue",
+      mostrarDialog: false,
       colorBtnEditar: false,
       colorBtnEliminar: false,
       search: "",
       headers: [
         {
-          text: "Dessert (100g serving)",
+          text: "Codigo",
           align: "start",
           //filterable: false,
-          value: "name",
+          value: "id",
         },
-        { text: "Calories", value: "calories" },
-        { text: "Fat (g)", filterable: false, value: "fat" },
-        { text: "Carbs (g)", filterable: false, value: "carbs" },
-        { text: "Protein (g)", filterable: false, value: "protein" },
-        { text: "Iron (%)", filterable: false, value: "iron" },
-        { text: "Actions", value: "actions", sortable: false },
+        { text: "Obra Social", value: "nombre" },
+        { text: "Telefono", filterable: false, value: "telefono" },
+        { text: "Medio de Pago", filterable: false, value: "medio_de_pago" },
+        { text: "Acciones", value: "actions", sortable: false },
       ],
-      desserts: [
-        {
-          name: "Frozen Yogurt",
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-          iron: "1%",
-        },
-        {
-          name: "Ice cream sandwich",
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-          iron: "1%",
-        },
-        {
-          name: "Eclair",
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-          iron: "7%",
-        },
-        {
-          name: "Cupcake",
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-          iron: "8%",
-        },
-        {
-          name: "Gingerbread",
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-          iron: "16%",
-        },
-        {
-          name: "Jelly bean",
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0,
-          iron: "0%",
-        },
-        {
-          name: "Lollipop",
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0,
-          iron: "2%",
-        },
-        {
-          name: "Honeycomb",
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5,
-          iron: "45%",
-        },
-        {
-          name: "Donut",
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9,
-          iron: "22%",
-        },
-        {
-          name: "KitKat",
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7,
-          iron: "6%",
-        },
-      ],
+      tablaObrasSociales: [],
     };
   },
   mounted() {
     console.log(sessionStorage.getItem("Token"));
-    var form = {
-      _token: sessionStorage.getItem("Token"),
+    // var form = {
+    //   _token: sessionStorage.getItem("Token"),
+    // };
+
+    const form = {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("Token")}`,
+      },
     };
 
-    this.$http.get(this.urlBase + "api/obras-sociales", form).then((res) => {
-      console.log(res.data);
-    });
+    this.$http
+      .get(this.urlBase + "api/obras-sociales", form, {
+        withCredentials: true,
+      })
+      .then((res) => {
+        console.log(res.data);
+        this.tablaObrasSociales = res.data;
+      });
 
     this.$http.get(this.urlBase + "sanctum/csrf-cookie").then(() => {
-      this.$http.get(this.urlBase + "api/obras-sociales", form).then((res) => {
-        console.log(res);
-        // console.log(res.data.message);
-        // if (res.data.message == "Login correcto") {
-        //   sessionStorage.setItem("NombreUsuario", res.data.user.name);
-        //   sessionStorage.setItem("Email", res.data.user.email);
-        //   sessionStorage.setItem("Token", res.data._token);
-        //   sessionStorage.setItem("NombreRol", res.data.user.roles[0].name);
-        //   sessionStorage.setItem("SesionAbierta", 0);
-
-        //   this.$router.push({ path: "/" });
-        //   location.reload();
-        // } else {
-        //   this.value = true;
-        //   this.colorSnackBar = "red";
-        //   this.mensajeSnackBar = "Usuario o Contraseña Incorrecta";
-        // }
-      });
+      this.$http
+        .get(this.urlBase + "api/obras-sociales", form, {
+          withCredentials: true,
+        })
+        .then((res) => {
+          console.log(res);
+        });
     });
+
+    // const instance = this.$http.create({
+    //   withCredentials: true,
+    //   baseURL: this.urlBase,
+    // });
+
+    // instance.get("api/obras-sociales");
+    // console.log(instance);
+  },
+  methods: {
+    cambiarColor() {
+      console.log("cambio el color");
+    },
+    ingresarObraSocial() {
+      console.log("Voy a abrir el formulario");
+      var motivo = "Ingresar";
+      this.$refs.modalingresareditarobrasocial.nuevaObraSocial(motivo);
+    },
+
+    async modificarObraSocial(fila) {
+      this.$refs.modalingresareditarobrasocial.cargarDatosEdicionObraSocial(
+        fila
+      );
+    },
   },
   watch: {
     hover(value) {
@@ -330,11 +251,6 @@ export default {
     //   console.log(this.colorBtnEliminar);
     //   console.log(value);
     // },
-  },
-  methods: {
-    cambiarColor() {
-      console.log("cambio el color");
-    },
   },
   //   computed(){
   //     cambiarColor(){
